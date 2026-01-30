@@ -1,0 +1,14 @@
+{
+  "name": "[HOM] 🧪 CPU Usage - Homologation",
+  "type": "metric alert",
+  "query": "avg(last_5m):avg:system.cpu.user{env:homologation} by {host} > 85",
+  "message": "CPU elevada no ambiente de HOM.\n\nHost: {{host.name}}\nCPU: {{value}}%\n\n@foconapraticaoficial@gmail.com",
+  "tags": ["env:homologation", "severity:medium", "category:infrastructure"],
+  "priority": 3,
+  "options": {
+    "thresholds": {
+      "critical": 85,
+      "warning": 70
+    }
+  }
+}

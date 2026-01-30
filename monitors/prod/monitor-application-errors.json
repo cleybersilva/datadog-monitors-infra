@@ -1,0 +1,16 @@
+{
+  "name": "[PROD] 🚨 ALERTA: Erros de Aplicação - Taxa acima do normal",
+  "type": "log alert",
+  "query": "logs(\"status:error env:production\").index(\"*\").rollup(\"count\").by(\"service\").last(\"5m\") > 50",
+  "message": "## 🚨 ALERTA: Alto Volume de Erros\n\n**Serviço:** {{service.name}}\n**Erros nos últimos 5 min:** {{value}}\n\n**Investigar:**\n1. Verificar logs no Datadog\n2. Checar últimos deployments\n3. Validar integrações externas\n\n@foconapraticaoficial@gmail.com",
+  "tags": ["env:production", "severity:critical", "category:application"],
+  "priority": 1,
+  "options": {
+    "thresholds": {
+      "critical": 50,
+      "warning": 20
+    },
+    "notify_no_data": false,
+    "renotify_interval": 30
+  }
+}

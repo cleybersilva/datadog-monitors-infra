@@ -1,0 +1,16 @@
+{
+  "name": "[PROD] ⚠️ ALERTA: Memória Elevada - Utilização acima de 85%",
+  "type": "metric alert",
+  "query": "avg(last_5m):avg:system.mem.pct_usable{env:production} by {host} < 15",
+  "message": "## ⚠️ ALERTA: Memória Baixa Disponível\n\n**Host:** {{host.name}}\n**Ambiente:** Production\n**Memória Disponível:** {{value}}%\n\n**Ações:**\n1. Verificar processos com alto consumo\n2. Avaliar memory leaks\n3. Considerar scaling vertical\n\n@foconapraticaoficial@gmail.com",
+  "tags": ["env:production", "severity:high", "category:infrastructure", "metric:memory"],
+  "priority": 2,
+  "options": {
+    "thresholds": {
+      "critical": 15,
+      "warning": 25
+    },
+    "notify_no_data": false,
+    "renotify_interval": 60
+  }
+}

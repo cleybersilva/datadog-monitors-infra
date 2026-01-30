@@ -1,0 +1,14 @@
+{
+  "name": "[DEV] 🔧 CPU Usage - Development",
+  "type": "metric alert",
+  "query": "avg(last_10m):avg:system.cpu.user{env:development} by {host} > 90",
+  "message": "CPU alta no ambiente de DEV.\n\nHost: {{host.name}}\nCPU: {{value}}%",
+  "tags": ["env:development", "severity:low", "category:infrastructure"],
+  "priority": 4,
+  "options": {
+    "thresholds": {
+      "critical": 90
+    },
+    "notify_no_data": false
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "name": "[PROD] 🌐 ALERTA: Erros JavaScript no Frontend",
+  "type": "rum alert",
+  "query": "rum(\"@type:error service:civeni-website\").rollup(\"count\").last(\"5m\") > 10",
+  "message": "## 🌐 ALERTA: Erros JavaScript Detectados\n\n**Serviço:** civeni-website\n**Erros:** {{value}}\n\n**Verificar:**\n- https://us5.datadoghq.com/rum/sessions\n\n@foconapraticaoficial@gmail.com",
+  "tags": ["env:production", "severity:high", "category:rum", "service:civeni-website"],
+  "priority": 2,
+  "options": {
+    "thresholds": {
+      "critical": 10,
+      "warning": 5
+    }
+  }
+}

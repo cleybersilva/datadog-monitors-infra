@@ -1,0 +1,16 @@
+{
+  "name": "[PROD] 💾 ALERTA: Disco Cheio - Utilização acima de 80%",
+  "type": "metric alert",
+  "query": "avg(last_5m):avg:system.disk.in_use{env:production} by {host,device} * 100 > 80",
+  "message": "## 💾 ALERTA: Espaço em Disco Crítico\n\n**Host:** {{host.name}}\n**Device:** {{device.name}}\n**Uso:** {{value}}%\n\n**Ações:**\n1. Limpar logs antigos\n2. Remover arquivos temporários\n3. Avaliar expansão de disco\n\n@foconapraticaoficial@gmail.com",
+  "tags": ["env:production", "severity:critical", "category:infrastructure", "metric:disk"],
+  "priority": 1,
+  "options": {
+    "thresholds": {
+      "critical": 80,
+      "warning": 70
+    },
+    "notify_no_data": false,
+    "renotify_interval": 120
+  }
+}

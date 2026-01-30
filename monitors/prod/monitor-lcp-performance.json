@@ -1,0 +1,14 @@
+{
+  "name": "[PROD] ⚡ ALERTA: Performance Degradada - LCP > 2.5s",
+  "type": "rum alert",
+  "query": "rum(\"@view.largest_contentful_paint:>2500000000 service:civeni-website\").rollup(\"count\").last(\"15m\") > 20",
+  "message": "## ⚡ ALERTA: Core Web Vitals Degradados\n\n**Métrica:** Largest Contentful Paint (LCP)\n**Sessões afetadas:** {{value}}\n**Threshold:** > 2.5 segundos\n\n**Impacto:**\n- SEO prejudicado\n- UX degradada\n\n@foconapraticaoficial@gmail.com",
+  "tags": ["env:production", "severity:medium", "category:performance", "metric:lcp"],
+  "priority": 3,
+  "options": {
+    "thresholds": {
+      "critical": 20,
+      "warning": 10
+    }
+  }
+}

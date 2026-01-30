@@ -1,0 +1,20 @@
+{
+  "name": "[PROD] 🔥 ALERTA: CPU Elevada - Utilização acima de 80%",
+  "type": "metric alert",
+  "query": "avg(last_5m):avg:system.cpu.user{env:production} by {host} > 80",
+  "message": "## 🔥 ALERTA: Consumo de CPU Elevado\n\n**Serviço Afetado:** {{host.name}}\n**Ambiente:** Production\n**Detalhes do Alerta:**\n- Utilização de CPU: {{value}}%\n- Threshold: 80%\n\n**Ações Recomendadas:**\n1. Verificar processos consumindo CPU\n2. Avaliar necessidade de scaling\n3. Verificar logs de aplicação\n\n@foconapraticaoficial@gmail.com",
+  "tags": ["env:production", "severity:high", "category:infrastructure", "metric:cpu"],
+  "priority": 2,
+  "options": {
+    "thresholds": {
+      "critical": 80,
+      "warning": 60
+    },
+    "notify_audit": false,
+    "notify_no_data": false,
+    "renotify_interval": 60,
+    "include_tags": true,
+    "require_full_window": true,
+    "new_group_delay": 300
+  }
+}
