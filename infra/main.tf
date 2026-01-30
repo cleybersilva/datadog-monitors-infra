@@ -127,3 +127,4 @@ resource "datadog_monitor" "network_errors" {
     warning  = 50
   }
 }
+# Managed by Terraform - Fri Jan 30 22:14:50 UTC 2026
