@@ -15,31 +15,6 @@ provider "datadog" {
   api_url = "https://api.${var.datadog_site}/"
 }
 
-variable "datadog_api_key" {
-  type      = string
-  sensitive = true
-}
-
-variable "datadog_app_key" {
-  type      = string
-  sensitive = true
-}
-
-variable "datadog_site" {
-  type    = string
-  default = "us5.datadoghq.com"
-}
-
-variable "environment" {
-  type    = string
-  default = "prod"
-}
-
-variable "notification_channels" {
-  type    = list(string)
-  default = []
-}
-
 # Monitor de CPU
 resource "datadog_monitor" "cpu_high" {
   name    = "[${upper(var.environment)}] 🔥 ALERTA: CPU Elevada"
