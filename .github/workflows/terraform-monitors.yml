@@ -1,6 +1,7 @@
 name: "🐕 Datadog Monitors CI/CD"
 
 on:
+  workflow_dispatch:
   push:
     branches: [main]
     paths:
@@ -32,12 +33,12 @@ jobs:
           echo "✅ All JSON files valid!"
 
   plan:
-    name: "📋 Terraform Plan"
+    name: "📋 Terraform Plan (${{ matrix.environment }})"
     needs: validate
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        environment: [dev, hom, prod]
+        environment: [prod]
     steps:
       - uses: actions/checkout@v4
       
@@ -55,10 +56,12 @@ jobs:
         env:
           TF_VAR_datadog_api_key: ${{ secrets.DD_API_KEY }}
           TF_VAR_datadog_app_key: ${{ secrets.DD_APP_KEY }}
+          TF_VAR_environment: ${{ matrix.environment }}
         run: |
           terraform plan \
             -var-file="../inventories/${{ matrix.environment }}.tfvars" \
-            -out="${{ matrix.environment }}.tfplan"
+            -out="${{ matrix.environment }}.tfplan" \
+            -input=false
       
       - name: Upload Plan
         uses: actions/upload-artifact@v4
@@ -69,7 +72,7 @@ jobs:
   apply:
     name: "🚀 Apply Monitors"
     needs: plan
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     environment: production
     strategy:
@@ -83,12 +86,6 @@ jobs:
         with:
           terraform_version: ${{ env.TF_VERSION }}
       
-      - name: Download Plan
-        uses: actions/download-artifact@v4
-        with:
-          name: tfplan-${{ matrix.environment }}
-          path: infra
-      
       - name: Terraform Init
         working-directory: infra
         run: terraform init
@@ -98,4 +95,9 @@ jobs:
         env:
           TF_VAR_datadog_api_key: ${{ secrets.DD_API_KEY }}
           TF_VAR_datadog_app_key: ${{ secrets.DD_APP_KEY }}
-        run: terraform apply -auto-approve "${{ matrix.environment }}.tfplan"
+          TF_VAR_environment: ${{ matrix.environment }}
+        run: |
+          terraform apply \
+            -var-file="../inventories/${{ matrix.environment }}.tfvars" \
+            -auto-approve \
+            -input=false
