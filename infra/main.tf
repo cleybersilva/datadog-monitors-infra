@@ -1,7 +1,3 @@
-# =============================================================================
-# Datadog Monitors Infrastructure
-# =============================================================================
-
 terraform {
   required_version = ">= 1.0"
   
@@ -11,10 +7,6 @@ terraform {
       version = "~> 3.0"
     }
   }
-  
-  backend "local" {
-    path = "terraform.tfstate"
-  }
 }
 
 provider "datadog" {
@@ -23,69 +15,80 @@ provider "datadog" {
   api_url = "https://api.${var.datadog_site}/"
 }
 
-# =============================================================================
-# Locals
-# =============================================================================
-
-locals {
-  monitors_path = "${path.module}/../monitors/${var.environment}"
-  monitor_files = fileset(local.monitors_path, "*.json")
-  
-  monitors = {
-    for file in local.monitor_files :
-    trimsuffix(file, ".json") => jsondecode(file("${local.monitors_path}/${file}"))
-  }
+variable "datadog_api_key" {
+  type      = string
+  sensitive = true
 }
 
-# =============================================================================
-# Monitors
-# =============================================================================
+variable "datadog_app_key" {
+  type      = string
+  sensitive = true
+}
 
-resource "datadog_monitor" "monitors" {
-  for_each = local.monitors
+variable "datadog_site" {
+  type    = string
+  default = "us5.datadoghq.com"
+}
+
+variable "environment" {
+  type    = string
+  default = "prod"
+}
+
+variable "notification_channels" {
+  type    = list(string)
+  default = []
+}
+
+# Monitor de CPU
+resource "datadog_monitor" "cpu_high" {
+  name    = "[${upper(var.environment)}] 🔥 ALERTA: CPU Elevada"
+  type    = "metric alert"
+  query   = "avg(last_5m):avg:system.cpu.user{env:${var.environment}} by {host} > 80"
+  message = "CPU acima de 80% no host {{host.name}}. @foconapraticaoficial@gmail.com"
   
-  name    = each.value.name
-  type    = each.value.type
-  query   = each.value.query
-  message = each.value.message
-  
-  tags = concat(
-    lookup(each.value, "tags", []),
-    ["env:${var.environment}", "managed-by:terraform"]
-  )
+  tags = ["env:${var.environment}", "managed-by:terraform"]
   
   monitor_thresholds {
-    critical          = lookup(lookup(each.value, "options", {}), "thresholds", {}).critical
-    warning           = lookup(lookup(lookup(each.value, "options", {}), "thresholds", {}), "warning", null)
-    critical_recovery = lookup(lookup(lookup(each.value, "options", {}), "thresholds", {}), "critical_recovery", null)
-    warning_recovery  = lookup(lookup(lookup(each.value, "options", {}), "thresholds", {}), "warning_recovery", null)
+    critical = 80
+    warning  = 60
   }
-  
-  notify_no_data    = lookup(lookup(each.value, "options", {}), "notify_no_data", false)
-  renotify_interval = lookup(lookup(each.value, "options", {}), "renotify_interval", 0)
-  
-  include_tags        = lookup(lookup(each.value, "options", {}), "include_tags", true)
-  require_full_window = lookup(lookup(each.value, "options", {}), "require_full_window", true)
-  
-  priority = lookup(each.value, "priority", null)
 }
 
-# =============================================================================
-# Outputs
-# =============================================================================
+# Monitor de Memória
+resource "datadog_monitor" "memory_high" {
+  name    = "[${upper(var.environment)}] ⚠️ ALERTA: Memória Baixa"
+  type    = "metric alert"
+  query   = "avg(last_5m):avg:system.mem.pct_usable{env:${var.environment}} by {host} < 15"
+  message = "Memória disponível abaixo de 15% no host {{host.name}}. @foconapraticaoficial@gmail.com"
+  
+  tags = ["env:${var.environment}", "managed-by:terraform"]
+  
+  monitor_thresholds {
+    critical = 15
+    warning  = 25
+  }
+}
 
-output "monitors_created" {
-  description = "Lista de monitors criados"
+# Monitor de Disco
+resource "datadog_monitor" "disk_high" {
+  name    = "[${upper(var.environment)}] 💾 ALERTA: Disco Cheio"
+  type    = "metric alert"
+  query   = "avg(last_5m):avg:system.disk.in_use{env:${var.environment}} by {host,device} * 100 > 80"
+  message = "Disco acima de 80% no host {{host.name}}. @foconapraticaoficial@gmail.com"
+  
+  tags = ["env:${var.environment}", "managed-by:terraform"]
+  
+  monitor_thresholds {
+    critical = 80
+    warning  = 70
+  }
+}
+
+output "monitors" {
   value = {
-    for k, v in datadog_monitor.monitors : k => {
-      id   = v.id
-      name = v.name
-      type = v.type
-    }
+    cpu    = datadog_monitor.cpu_high.id
+    memory = datadog_monitor.memory_high.id
+    disk   = datadog_monitor.disk_high.id
   }
-}
-
-output "monitor_count" {
-  description = "Quantidade de monitors criados"
-  value       = length(datadog_monitor.monitors)
 }
