@@ -29,8 +29,10 @@ jobs:
         run: |
           echo "Validating JSON files..."
           for file in monitors/**/*.json; do
-            echo "Checking $file"
-            jq empty "$file" || exit 1
+            if [ -f "$file" ]; then
+              echo "Checking $file"
+              jq empty "$file" || exit 1
+            fi
           done
           echo "✅ All JSON files valid!"
 
@@ -52,6 +54,18 @@ jobs:
       - name: Terraform Init
         working-directory: infra
         run: terraform init
+      
+      - name: Import Existing Monitors
+        working-directory: infra
+        env:
+          TF_VAR_datadog_api_key: ${{ secrets.DD_API_KEY }}
+          TF_VAR_datadog_app_key: ${{ secrets.DD_APP_KEY }}
+          TF_VAR_environment: ${{ matrix.environment }}
+        run: |
+          # Import monitors se existirem
+          terraform import datadog_monitor.cpu_high 17789464 2>/dev/null || true
+          terraform import datadog_monitor.memory_high 17789465 2>/dev/null || true
+          terraform import datadog_monitor.disk_high 17789463 2>/dev/null || true
       
       - name: Terraform Plan
         working-directory: infra
@@ -91,6 +105,18 @@ jobs:
       - name: Terraform Init
         working-directory: infra
         run: terraform init
+      
+      - name: Import Existing Monitors
+        working-directory: infra
+        env:
+          TF_VAR_datadog_api_key: ${{ secrets.DD_API_KEY }}
+          TF_VAR_datadog_app_key: ${{ secrets.DD_APP_KEY }}
+          TF_VAR_environment: ${{ matrix.environment }}
+        run: |
+          # Import monitors se existirem
+          terraform import datadog_monitor.cpu_high 17789464 2>/dev/null || true
+          terraform import datadog_monitor.memory_high 17789465 2>/dev/null || true
+          terraform import datadog_monitor.disk_high 17789463 2>/dev/null || true
       
       - name: Terraform Apply
         working-directory: infra
